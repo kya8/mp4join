@@ -6,8 +6,8 @@ It's essentially a C++ port of the Rust library [mp4-merge](https://github.com/g
 
 # Command line tool
 For end-users, A simple command line tool `mp4join` is included. It displays progress information while joining the files.
-
-Pre-compiled binaries are available in the Release page.
+## Download
+Pre-compiled binaries are available in the [Release](https://github.com/kya8/mp4join/releases/latest) page.
 
 
 # Building
@@ -15,7 +15,7 @@ Pre-compiled binaries are available in the Release page.
 ## Prerequisite
 CMake and C++17-compliant compiler. `Git` is used to generate optional version info.
 
-Tested on Windows(MSVC) and Linux(GCC/Clang).
+Tested on Windows(MSVC, MinGW) and Linux(GCC/Clang).
 
 ## Compile
 ```sh
