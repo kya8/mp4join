@@ -1,6 +1,7 @@
 #ifndef MP4JOIN_HPP_B1D75A8F_49D2_4E94_8559_C4EC6A2836E9
 #define MP4JOIN_HPP_B1D75A8F_49D2_4E94_8559_C4EC6A2836E9
 
+#include "api_export.h"
 #include <functional>
 
 namespace mp4join {
@@ -25,7 +26,7 @@ using JoinProgCb = std::function<void(int prog)>;
  * 
  * @note This function returns on completion or error.
  */
-JoinResult mp4_join(int nb_input, const char* const* input_files, const char* output_file, const JoinProgCb& prog_cb = {}) noexcept;
+MP4JOIN_API JoinResult mp4_join(int nb_input, const char* const* input_files, const char* output_file, const JoinProgCb& prog_cb = {}) noexcept;
 
 }
 

@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.15.0)
 project(mp4join VERSION 1.0.0 LANGUAGES CXX)
 
+option(BUILD_SHARED_LIBS "Build shared mp4join library" OFF)
+
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH  ${CMAKE_CURRENT_BINARY_DIR}/lib)
+set(LIBRARY_OUTPUT_PATH    ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -53,18 +55,23 @@ else()
 endif()
 
 set(MP4JOIN_SOURCE_FILES
-mp4.hpp mp4.cpp mp4join/mp4join.hpp mp4join.cpp fourcc.hpp
+mp4.hpp mp4.cpp mp4join.cpp fourcc.hpp
 lfs.h binary_file_stream.hpp binary_file_stream.cpp
 binary_stream_base.hpp binary_stream_base.cpp endian.h
+mp4join/api_export.h mp4join/mp4join.hpp mp4join/version.hpp
 )
 list(TRANSFORM MP4JOIN_SOURCE_FILES PREPEND lib/)
 
-add_library(mp4join STATIC
+add_library(mp4join
 ${MP4JOIN_SOURCE_FILES}
-lib/mp4join/version.hpp ${GENERATED_SOURCE_DIR}/version.cpp
+${GENERATED_SOURCE_DIR}/version.cpp
 )
 target_include_directories(mp4join PUBLIC lib)
 target_compile_definitions(mp4join PRIVATE MP4JOIN_BUILD_TYPE=\"$<CONFIG>\")
+target_compile_definitions(mp4join PRIVATE MP4JOIN_SOURCE)
+if(BUILD_SHARED_LIBS)
+target_compile_definitions(mp4join PUBLIC MP4JOIN_SHARED_LIB)
+endif()
 
 find_package(Threads REQUIRED)
 add_executable(mp4join_cli src/mp4join_cli.cpp)
