@@ -4,8 +4,7 @@
 #include <cstring>
 #include <vector>
 #include <thread>
-#include <mutex>
-#include <condition_variable>
+#include <atomic>
 
 
 int main(int argc, char** argv)
@@ -37,45 +36,34 @@ int main(int argc, char** argv)
             return 0;
         }
         if (err_flag || !output || inputs.size() < 2) {
-            std::puts("Usage: mp4_join <file_1> <file_2> [...] <-o output_file> [-v]");
+            std::puts("Usage: mp4join <file_1> <file_2> [...] <-o output_file> [-v]");
             return 1;
         }
     }
 
     using namespace mp4join;
     JoinResult ret;
-    bool done = false;
-    int prog = -1, prog_prev = -1;
-    std::mutex mtx;
-    std::condition_variable cond;
+    std::atomic<bool> done = false;
+    std::atomic<int> prog = -1;
+    int prog_prev = -1;
     
     const auto prog_cb = [&] (int prog_) {
-        {
-            std::lock_guard lk(mtx);
-            prog = prog_;
-        }
-        cond.notify_all();
+        prog.store(prog_);
     };
     std::thread worker {
         [&] {
             ret = mp4_join((int)inputs.size(), inputs.data(), output, prog_cb);
-            {
-                std::lock_guard lk(mtx);
-                done = true;
-            }
-            cond.notify_all();
+            done.store(true);
         }
     };
 
-    for (;; std::this_thread::sleep_for(std::chrono::milliseconds(100))) {
-        {
-            std::unique_lock lk(mtx);
-            cond.wait(lk, [&] { return prog != prog_prev || done; });
-            if (done) break;
-            prog_prev = prog;
+    for (; !done.load(); std::this_thread::sleep_for(std::chrono::milliseconds(100))) {
+        const auto prog_new = prog.load();
+        if (prog_new > prog_prev) {
+            prog_prev = prog_new;
+            std::printf("\rProgress: %d%%", prog_prev);
+            std::fflush(stdout);
         }
-        std::printf("\rProgress: %d%%", prog_prev);
-        std::fflush(stdout);
     }
 
     worker.join();
@@ -83,16 +71,16 @@ int main(int argc, char** argv)
     std::putchar('\r');
     switch (ret) {
     case(JoinResult::Success):
-        std::printf("Merge done: %s\n", output);
+        std::printf("MP4 join done: %s\n", output);
         break;
     case(JoinResult::InvalidInput):
-        std::puts("Merge error: Invalid input file.");
+        std::puts("MP4 join error: Invalid input file.");
         break;
     case(JoinResult::IoError):
-        std::puts("Merge error: Could not open file.");
+        std::puts("MP4 join error: Could not open file.");
         break;
     case(JoinResult::InternalError):
-        std::puts("Merge error: Internal merge error.");
+        std::puts("MP4 join error: Internal error.");
         break;
     }
 
