@@ -35,11 +35,12 @@ The resultant binaries should be in `bin` and `lib` inside the build directory.
 Run `cpack` to create a zip archive containing the library, headers, and the command line utility.
 
 # Use as a library
-Refer to [mp4join.hpp](lib/mp4join/mp4join.hpp)
+Refer to [mp4join.hpp](lib/mp4join/mp4join.hpp).
 
-# To-Do
+# To-Do and missing features
 * Support generic input/output interfaces (e.g. `std::istream`).
 * Handle exotic video files produced by some cameras, e.g. Insta360.
+* Support videos with B-frames. The library was originally intended for camera recordings, which typically lack B-frames.
 * Tidy the code. While it works, this project was originally written quite a while ago for fun.
 
 # Credits
