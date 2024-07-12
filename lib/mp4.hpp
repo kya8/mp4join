@@ -21,7 +21,7 @@ public:
 
 
 // Binary stream for MP4 file.
-// This class is mainly for mp4_join.
+// This class is mainly for mp4join.
 class Mp4Stream : public BinaryFileStream {
 public:
     using BinaryFileStream::BinaryFileStream;

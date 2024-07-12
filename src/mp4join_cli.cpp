@@ -1,5 +1,5 @@
-#include "mp4_join.hpp"
-#include "version.hpp"
+#include <mp4join/mp4join.hpp>
+#include <mp4join/version.hpp>
 #include <cstdio>
 #include <cstring>
 #include <string>

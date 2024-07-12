@@ -53,14 +53,15 @@ else()
 endif()
 
 set(MP4JOIN_SOURCE_FILES
-mp4.hpp mp4.cpp mp4_join.hpp mp4_join.cpp fourcc.hpp
+mp4.hpp mp4.cpp mp4join/mp4join.hpp mp4join.cpp fourcc.hpp
 lfs.h binary_file_stream.hpp binary_file_stream.cpp
 binary_stream_base.hpp binary_stream_base.cpp endian.h
 )
 list(TRANSFORM MP4JOIN_SOURCE_FILES PREPEND lib/)
+
 add_library(mp4join STATIC
 ${MP4JOIN_SOURCE_FILES}
-lib/version.hpp ${GENERATED_SOURCE_DIR}/version.cpp
+lib/mp4join/version.hpp ${GENERATED_SOURCE_DIR}/version.cpp
 )
 target_include_directories(mp4join PUBLIC lib)
 target_compile_definitions(mp4join PRIVATE MP4JOIN_BUILD_TYPE=\"$<CONFIG>\")
@@ -74,12 +75,10 @@ target_link_libraries(mp4join_cli PRIVATE mp4join Threads::Threads)
 install(TARGETS mp4join
 ARCHIVE DESTINATION lib
 LIBRARY DESTINATION lib
-RUNTIME DESTINATION bin
-)
-install(FILES lib/mp4_join.hpp lib/version.hpp DESTINATION include)
+RUNTIME DESTINATION bin)
+install(DIRECTORY lib/mp4join DESTINATION include)
 install(TARGETS mp4join_cli DESTINATION bin)
 
-#include(InstallRequiredSystemLibraries)
 set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME}-${GIT_DESC}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
 set(CPACK_GENERATOR "ZIP")
 set(CPACK_SOURCE_GENERATOR "ZIP")
