@@ -2,7 +2,6 @@
 #include <mp4join/version.hpp>
 #include <cstdio>
 #include <cstring>
-#include <string>
 #include <vector>
 #include <thread>
 #include <mutex>
@@ -68,7 +67,6 @@ int main(int argc, char** argv)
         }
     };
 
-    std::string prog_line;
     for (;; std::this_thread::sleep_for(std::chrono::milliseconds(100))) {
         {
             std::unique_lock lk(mtx);
@@ -76,9 +74,7 @@ int main(int argc, char** argv)
             if (done) break;
             prog_prev = prog;
         }
-        prog_line = "\rProgress: ";
-        prog_line.append(std::to_string(prog_prev)).push_back('%');
-        std::fputs(prog_line.c_str(), stdout);
+        std::printf("\rProgress: %d%%", prog_prev);
         std::fflush(stdout);
     }
 
