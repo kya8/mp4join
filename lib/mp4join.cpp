@@ -397,14 +397,15 @@ write_joined(MergeInfo& info, std::vector<Mp4Stream>& files, BinaryFileStream& o
             if(atom.fourcc == fourcc("stts")) {
                 // Merge entries with the same duration. Is this necessary to be conformant?
                 decltype(track_info.stts) new_stts;
-                uint32_t current_duration;
+                uint32_t current_duration{};
                 for (const auto& [count, duration] : track_info.stts) {
-                    if(!new_stts.empty() && current_duration == duration) {
+                    if (!new_stts.empty() && current_duration == duration) {
                         new_stts.back()[0] += count;
-                        continue;
                     }
-                    current_duration = duration;
-                    new_stts.push_back({count, duration});
+                    else {
+                        current_duration = duration;
+                        new_stts.push_back({count, duration});
+                    }
                 }
 
                 output.writeNum(uint32_t(new_stts.size()));
