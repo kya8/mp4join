@@ -57,7 +57,7 @@ int main(int argc, char** argv)
         }
     };
 
-    for (; !done.load(); std::this_thread::sleep_for(std::chrono::milliseconds(100))) {
+    for (int cnt = 0; !done.load(); cnt += (cnt < 10), std::this_thread::sleep_for(std::chrono::milliseconds(cnt <= 3 ? 1 : 100))) {
         const auto prog_new = prog.load();
         if (prog_new > prog_prev) {
             prog_prev = prog_new;
