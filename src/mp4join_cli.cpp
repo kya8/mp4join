@@ -61,7 +61,10 @@ int main(int argc, char** argv)
         const auto prog_new = prog.load();
         if (prog_new > prog_prev) {
             prog_prev = prog_new;
-            std::printf("\rProgress: %d%%", prog_prev);
+            static char line_buf[32];
+            // print the whole string at once to avoid cursor flickering observed on MinGW
+            std::snprintf(line_buf, 32, "\rProgress: %d%%", prog_prev);
+            std::fputs(line_buf, stdout);
             std::fflush(stdout);
         }
     }
