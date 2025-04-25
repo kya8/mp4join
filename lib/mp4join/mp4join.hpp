@@ -1,5 +1,5 @@
-#ifndef MP4JOIN_HPP_B1D75A8F_49D2_4E94_8559_C4EC6A2836E9
-#define MP4JOIN_HPP_B1D75A8F_49D2_4E94_8559_C4EC6A2836E9
+#ifndef MP4JOIN_HPP
+#define MP4JOIN_HPP
 
 #include "api_export.h"
 #include <functional>
@@ -31,4 +31,4 @@ MP4JOIN_API JoinResult mp4_join(int nb_input, const char* const* input_files, co
 }
 
 
-#endif /* MP4JOIN_HPP_B1D75A8F_49D2_4E94_8559_C4EC6A2836E9 */
+#endif /* MP4JOIN_HPP */

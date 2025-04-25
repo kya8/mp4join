@@ -79,9 +79,8 @@ add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
 # endif()
 
 set(MP4JOIN_SOURCE_FILES
+bstream/endian.h bstream/lfs.hpp bstream/binary_stream.hpp bstream/binary_file_stream.hpp bstream/binary_file_stream.cpp
 mp4.hpp mp4.cpp mp4join.cpp fourcc.hpp
-lfs.h binary_file_stream.hpp binary_file_stream.cpp
-binary_stream_base.hpp binary_stream_base.cpp endian.h
 mp4join/api_export.h mp4join/mp4join.hpp mp4join/version.hpp
 )
 list(TRANSFORM MP4JOIN_SOURCE_FILES PREPEND lib/)

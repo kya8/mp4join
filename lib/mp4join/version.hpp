@@ -1,5 +1,5 @@
-#ifndef VERSION_HPP_BBE78D43_7214_4A50_B1BA_F445C306C4D0
-#define VERSION_HPP_BBE78D43_7214_4A50_B1BA_F445C306C4D0
+#ifndef MP4JOIN_VERSION_HPP
+#define MP4JOIN_VERSION_HPP
 
 #include "api_export.h"
 
@@ -21,4 +21,4 @@ MP4JOIN_API extern const char* const HOST_HOSTNAME;
 } // namespace version
 } // namespace mp4join
 
-#endif /* VERSION_HPP_BBE78D43_7214_4A50_B1BA_F445C306C4D0 */
+#endif /* MP4JOIN_VERSION_HPP */

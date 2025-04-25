@@ -1,5 +1,5 @@
-#ifndef FOURCC_HPP_C5922443_084E_4328_994F_CEACA82683B3
-#define FOURCC_HPP_C5922443_084E_4328_994F_CEACA82683B3
+#ifndef MP4JOIN_FOURCC_HPP
+#define MP4JOIN_FOURCC_HPP
 
 #include <cstdint>
 
@@ -12,4 +12,4 @@ fourcc(const char(&s)[N]) noexcept
     return std::uint32_t(s[0]) << 24 | std::uint32_t(s[1]) << 16 | std::uint32_t(s[2]) << 8 | std::uint32_t(s[3]);
 }
 
-#endif /* FOURCC_HPP_C5922443_084E_4328_994F_CEACA82683B3 */
+#endif /* MP4JOIN_FOURCC_HPP */
