@@ -22,7 +22,7 @@ class Mp4Stream : public BinaryFileStream {
 public:
     using BinaryFileStream::BinaryFileStream;
 
-    bool open(const std::string& filename) noexcept;
+    bool open(const char* filename) noexcept;
 
     // This holds stream-specific info for an atom.
     struct AtomInfo {

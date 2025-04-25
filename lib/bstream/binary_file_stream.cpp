@@ -24,7 +24,7 @@ BinaryFileStream& BinaryFileStream::operator=(BinaryFileStream&& rhs) noexcept
 }
 
 bool
-BinaryFileStream::open(const std::string& filename, FileStreamMode mode) noexcept
+BinaryFileStream::open(const char* filename, FileStreamMode mode) noexcept
 {
     if (fp) {
         return false;
@@ -55,7 +55,7 @@ BinaryFileStream::open(const std::string& filename, FileStreamMode mode) noexcep
 #pragma warning(push)
 #pragma warning(disable : 4996)
 #endif
-    fp = fopen(filename.c_str(), mode_str);
+    fp = fopen(filename, mode_str);
 #ifdef _MSC_VER
 #pragma warning(pop)
 #endif

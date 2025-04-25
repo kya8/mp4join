@@ -20,7 +20,7 @@ public:
 
 
 
-bool Mp4Stream::open(const std::string & filename) noexcept
+bool Mp4Stream::open(const char* filename) noexcept
 {
     return BinaryFileStream::open(filename, FileStreamMode::Read);
 }

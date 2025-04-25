@@ -26,7 +26,7 @@ public:
     BinaryFileStream(BinaryFileStream&& rhs) noexcept;
     BinaryFileStream& operator=(BinaryFileStream&& rhs) noexcept;
 
-    bool open(const std::string& filename, FileStreamMode mode = FileStreamMode::Read) noexcept;
+    bool open(const char* filename, FileStreamMode mode = FileStreamMode::Read) noexcept;
     bool close() noexcept;
     bool is_open() const noexcept;
     OffsetType get_length() const noexcept;
