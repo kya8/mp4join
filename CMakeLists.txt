@@ -1,14 +1,32 @@
 cmake_minimum_required(VERSION 3.15.0)
-project(mp4join VERSION 1.0.0 LANGUAGES CXX)
+
+if(NOT GENERATOR_IS_MULTI_CONFIG)
+  # Default to Release if not set
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build.")
+endif()
+
+project(mp4join LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build shared mp4join library" OFF)
+option(MP4JOIN_OPTIMIZED_X86_64 "Enable optimized x86-64 builds, targetting x86-64-v3 or equivalent." ON)
 
-set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
-set(LIBRARY_OUTPUT_PATH    ${CMAKE_CURRENT_BINARY_DIR}/lib)
+# set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
+# set(LIBRARY_OUTPUT_PATH    ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Optimized x86-64 build
+if(MP4JOIN_OPTIMIZED_X86_64 AND CMAKE_SYSTEM_PROCESSOR MATCHES "^(x86_64|AMD64)$")
+  include(CheckCXXCompilerFlag)
+  check_cxx_compiler_flag("-march=x86-64-v3" COMPILER_SUPPORTS_MARCH_X86_64_V3)
+  add_compile_options($<IF:$<CXX_COMPILER_ID:MSVC>,/arch:AVX2,$<GENEX_EVAL:$<IF:$<BOOL:${COMPILER_SUPPORTS_MARCH_X86_64_V3}>,-march=x86-64-v3,-march=haswell>>>)
+endif()
+
+# Do not export symbols by default
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 # -------> Git version
 set(GIT_DESC    Unknown)
@@ -48,11 +66,17 @@ set(GENERATED_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(lib/version.cpp.in ${GENERATED_SOURCE_DIR}/version.cpp @ONLY)
 # <-------
 
-if(MSVC)
-  add_compile_options(/W3)
-else()
-  add_compile_options(-Wall -Wextra -pedantic)
-endif()
+# Enable some warnings
+add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/W3,-Wall;-Wextra;-pedantic>")
+
+# MSVC conformance mode
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/permissive->)
+# Enable updated __cplusplus macro for MSVC
+add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
+
+# if(UNIX)
+# add_compile_definitions(_POSIX_C_SOURCE=200809L)
+# endif()
 
 set(MP4JOIN_SOURCE_FILES
 mp4.hpp mp4.cpp mp4join.cpp fourcc.hpp
@@ -79,14 +103,21 @@ set_target_properties(mp4join_cli PROPERTIES OUTPUT_NAME mp4join)
 target_link_libraries(mp4join_cli PRIVATE mp4join Threads::Threads)
 
 # -------> Package
-install(TARGETS mp4join
-ARCHIVE DESTINATION lib
-LIBRARY DESTINATION lib
-RUNTIME DESTINATION bin)
-install(DIRECTORY lib/mp4join DESTINATION include)
-install(TARGETS mp4join_cli DESTINATION bin)
+install(TARGETS mp4join)
+if(BUILD_SHARED_LIBS AND MSVC)
+install(FILES $<TARGET_PDB_FILE:mp4join> TYPE BIN OPTIONAL)
+endif()
+install(DIRECTORY lib/mp4join TYPE INCLUDE)
+install(TARGETS mp4join_cli)
 
 set(CPACK_PACKAGE_FILE_NAME ${PROJECT_NAME}-${GIT_DESC}_${CMAKE_SYSTEM_NAME}_${CMAKE_SYSTEM_PROCESSOR})
+if(NOT BUILD_SHARED_LIBS)
+STRING(APPEND CPACK_PACKAGE_FILE_NAME "-staticlib")
+endif()
+if(CMAKE_BUILD_TYPE)
+STRING(APPEND CPACK_PACKAGE_FILE_NAME "-${CMAKE_BUILD_TYPE}")
+endif()
+
 set(CPACK_GENERATOR "ZIP")
 set(CPACK_SOURCE_GENERATOR "ZIP")
 set(CPACK_INCLUDE_TOPLEVEL_DIRECTORY OFF)

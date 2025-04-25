@@ -29,7 +29,6 @@ $ mkdir -p build && cd build
 $ cmake -S .. -DCMAKE_BUILD_TYPE=<Release|Debug|...> -DBUILD_SHARED_LIBS=<OFF|ON>
 $ cmake --build .
 ```
-The resultant binaries should be in `bin` and `lib` inside the build directory.
 
 ## Package
 Run `cpack` to create a zip archive containing the library, headers, and the command line utility.
