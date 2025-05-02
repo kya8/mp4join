@@ -8,7 +8,7 @@ endif()
 project(mp4join LANGUAGES CXX)
 
 option(BUILD_SHARED_LIBS "Build shared mp4join library" OFF)
-option(MP4JOIN_OPTIMIZED_X86_64 "Enable optimized x86-64 builds, targetting x86-64-v3 or equivalent." ON)
+option(MP4JOIN_OPTIMIZED_X86_64 "Enable optimized x86-64 builds, targetting x86-64-v3 or equivalent." OFF)
 
 # set(EXECUTABLE_OUTPUT_PATH ${CMAKE_CURRENT_BINARY_DIR}/bin)
 # set(LIBRARY_OUTPUT_PATH    ${CMAKE_CURRENT_BINARY_DIR}/lib)
