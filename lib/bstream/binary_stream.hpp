@@ -23,7 +23,7 @@ enum class Endian {
     BE
 };
 
-static constexpr Endian target_endian = BSTREAM_ENDIAN == BSTREAM_BIG_ENDIAN ? Endian::BE : Endian::LE;
+inline constexpr Endian target_endian = BSTREAM_ENDIAN == BSTREAM_BIG_ENDIAN ? Endian::BE : Endian::LE;
 
 struct StreamError : std::runtime_error {
     using std::runtime_error::runtime_error;

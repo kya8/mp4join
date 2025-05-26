@@ -63,8 +63,7 @@ int main(int argc, char** argv)
     static constexpr int busy_spin_interval = 1;
     static constexpr int relaxed_spin_interval = 100;
     for (int cnt = 0; !done.load(std::memory_order_acquire); cnt += (cnt < busy_spin_cnt), std::this_thread::sleep_for(std::chrono::milliseconds(cnt < busy_spin_cnt ? busy_spin_interval : relaxed_spin_interval))) {
-        const auto prog_new = prog.load(std::memory_order_acquire);
-        if (prog_new > prog_prev) {
+        if (const auto prog_new = prog.load(std::memory_order_acquire); prog_new > prog_prev) {
             static char line_buf[32];
             // print the whole string at once to avoid cursor flickering observed on MinGW
             std::snprintf(line_buf, 32, "\rProgress: %d%%", prog_new);
