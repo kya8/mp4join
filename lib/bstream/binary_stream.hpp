@@ -6,6 +6,7 @@
 #include <type_traits>
 #include <stdexcept>
 #include <algorithm>
+#include <memory>
 #include "endian.h"    // detect target endian
 
 namespace bstream {
@@ -131,16 +132,19 @@ public:
             throw StreamError{"Stream not open"};
         }
         const auto buf_sz = n > 4 * 1024 * 1024 ? 4 * 1024 * 1024 : n;
-        const auto buf = new unsigned char[buf_sz]; // Should use stack-allocated array for small buf_sz
+
+#ifdef __cpp_lib_smart_ptr_for_overwrite
+        const auto buf = std::make_unique_for_overwrite<unsigned char[]>(buf_sz); // Should use stack-allocated array for small buf_sz
+#else
+        const auto buf = std::make_unique<unsigned char[]>(buf_sz);
+#endif
 
         while (n > 0) {
             const auto to_read = n > buf_sz ? buf_sz : n;
-            in.read(buf, to_read);
-            this->write(buf, to_read);
+            in.read(buf.get(), to_read);
+            this->write(buf.get(), to_read);
             n -= to_read;
         }
-
-        delete[] buf;
     }
 
     void patch_bytes(OffsetType offset, const void* buf, std::size_t n) {
