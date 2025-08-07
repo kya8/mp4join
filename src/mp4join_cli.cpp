@@ -5,7 +5,13 @@
 #include <vector>
 #include <thread>
 #include <atomic>
+#include "is_tty.hpp"
 
+namespace {
+
+const bool stdout_is_tty = is_tty(stdout);
+
+} // namespace
 
 int main(int argc, char** argv)
 {
@@ -48,7 +54,7 @@ int main(int argc, char** argv)
     std::atomic<bool> done = false;
     std::atomic<int> prog = -1;
     int prog_prev = -1;
-    
+
     const auto prog_cb = [&] (int prog_) {
         prog.store(prog_, std::memory_order_release);
     };
@@ -59,23 +65,23 @@ int main(int argc, char** argv)
         }
     };
 
-    static constexpr int busy_spin_cnt = 5;
-    static constexpr int busy_spin_interval = 1;
-    static constexpr int relaxed_spin_interval = 100;
-    for (int cnt = 0; !done.load(std::memory_order_acquire); cnt += (cnt < busy_spin_cnt), std::this_thread::sleep_for(std::chrono::milliseconds(cnt < busy_spin_cnt ? busy_spin_interval : relaxed_spin_interval))) {
-        if (const auto prog_new = prog.load(std::memory_order_acquire); prog_new > prog_prev) {
-            static char line_buf[32];
-            // print the whole string at once to avoid cursor flickering observed on MinGW
-            std::snprintf(line_buf, 32, "\rProgress: %d%%", prog_new);
-            std::fputs(line_buf, stdout);
-            std::fflush(stdout);
-            prog_prev = prog_new;
+    if (stdout_is_tty) {
+        std::fputs("\x1b[?25l", stdout);
+        static constexpr int busy_spin_cnt = 5;
+        static constexpr int busy_spin_interval = 1;
+        static constexpr int relaxed_spin_interval = 100;
+        for (int cnt = 0; !done.load(std::memory_order_acquire); cnt += (cnt < busy_spin_cnt), std::this_thread::sleep_for(std::chrono::milliseconds(cnt < busy_spin_cnt ? busy_spin_interval : relaxed_spin_interval))) {
+            if (const auto prog_new = prog.load(std::memory_order_acquire); prog_new > prog_prev) {
+                std::printf("\rProgress: %d%%", prog_new);
+                std::fflush(stdout);
+                prog_prev = prog_new;
+            }
         }
+        std::fputs("\x1b[2K\r\x1b[?25h", stdout);
     }
 
     worker.join();
 
-    std::putchar('\r');
     switch (ret) {
     case(JoinResult::Success):
         std::printf("MP4 join done: %s\n", output);

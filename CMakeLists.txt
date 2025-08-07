@@ -67,7 +67,7 @@ configure_file(lib/version.cpp.in ${GENERATED_SOURCE_DIR}/version.cpp @ONLY)
 # <-------
 
 # Enable some warnings
-add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/W3,-Wall;-Wextra;-pedantic>")
+add_compile_options("$<IF:$<CXX_COMPILER_ID:MSVC>,/W4,-Wall;-Wextra;-pedantic>")
 
 # MSVC conformance mode
 add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/permissive->)
@@ -97,7 +97,7 @@ target_compile_definitions(mp4join PUBLIC MP4JOIN_SHARED_LIB)
 endif()
 
 find_package(Threads REQUIRED)
-add_executable(mp4join_cli src/mp4join_cli.cpp)
+add_executable(mp4join_cli src/mp4join_cli.cpp src/is_tty.hpp src/is_tty.cpp)
 set_target_properties(mp4join_cli PROPERTIES OUTPUT_NAME mp4join)
 target_link_libraries(mp4join_cli PRIVATE mp4join Threads::Threads)
 
