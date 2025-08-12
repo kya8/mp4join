@@ -29,38 +29,7 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 set(CMAKE_C_VISIBILITY_PRESET hidden)
 
 # -------> Git version
-set(GIT_DESC    Unknown)
-set(GIT_BRANCH  Unknown)
-set(COMMIT_DATE Unknown)
-set(COMMIT_HASH Unknown)
-
-site_name(HOST_HOSTNAME)
-if(CMAKE_CXX_COMPILER_ID)
-  set(COMPILER_NAME ${CMAKE_CXX_COMPILER_ID})
-else()
-  set(COMPILER_NAME Unknown)
-endif()
-if(CMAKE_CXX_COMPILER_VERSION)
-  set(COMPILER_VERSION ${CMAKE_CXX_COMPILER_VERSION})
-else()
-  set(COMPILER_VERSION Unknown)
-endif()
-
-find_package(Git)
-if(Git_FOUND)
-  # check if we're in a valid git repo
-  execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --is-inside-work-tree OUTPUT_VARIABLE INSIDE_GIT_REPO OUTPUT_STRIP_TRAILING_WHITESPACE)
-  if("${INSIDE_GIT_REPO}" STREQUAL "true")
-    execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} describe --tags --long --dirty --broken OUTPUT_VARIABLE GIT_DESC OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --abbrev-ref HEAD OUTPUT_VARIABLE GIT_BRANCH OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} log -1 --format=%cs OUTPUT_VARIABLE COMMIT_DATE OUTPUT_STRIP_TRAILING_WHITESPACE)
-    execute_process(WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} COMMAND ${GIT_EXECUTABLE} rev-parse --short HEAD OUTPUT_VARIABLE COMMIT_HASH OUTPUT_STRIP_TRAILING_WHITESPACE)
-  else()
-    message(WARNING "Not in a git repository.")
-  endif()
-else()
-  message(WARNING "Git was not found.")
-endif()
+include(cmake/git-version.cmake)
 
 set(GENERATED_SOURCE_DIR ${CMAKE_CURRENT_BINARY_DIR}/generated)
 configure_file(lib/version.cpp.in ${GENERATED_SOURCE_DIR}/version.cpp @ONLY)
@@ -103,7 +72,11 @@ target_link_libraries(mp4join_cli PRIVATE mp4join Threads::Threads)
 
 if(WIN32)
 enable_language(RC)
-target_sources(mp4join_cli PRIVATE resources/icon.rc)
+configure_file("cmake/info-cli.rc.in" ${GENERATED_SOURCE_DIR}/info-cli.rc @ONLY)
+target_sources(mp4join_cli PRIVATE cmake/icon.rc ${GENERATED_SOURCE_DIR}/info-cli.rc)
+if(BUILD_SHARED_LIBS)
+# Add metadata rc to dll
+endif()
 endif()
 
 # -------> Package
