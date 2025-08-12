@@ -101,6 +101,11 @@ add_executable(mp4join_cli src/mp4join_cli.cpp src/is_tty.hpp src/is_tty.cpp)
 set_target_properties(mp4join_cli PROPERTIES OUTPUT_NAME mp4join)
 target_link_libraries(mp4join_cli PRIVATE mp4join Threads::Threads)
 
+if(WIN32)
+enable_language(RC)
+target_sources(mp4join_cli PRIVATE resources/icon.rc)
+endif()
+
 # -------> Package
 install(TARGETS mp4join)
 if(BUILD_SHARED_LIBS AND MSVC)
