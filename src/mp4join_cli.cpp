@@ -14,10 +14,13 @@ namespace {
 
 const bool stdout_is_tty = is_tty(stdout);
 
-bool get_yn() noexcept
+bool get_yn(bool default_ = false) noexcept
 {
     const auto ans = std::getchar();
-    return ans == 'y' || ans == 'Y';
+    if (default_ == false) {
+        return ans == 'y' || ans == 'Y';
+    }
+    return ans != 'N' && ans != 'n';
 }
 
 } // namespace
@@ -25,7 +28,7 @@ bool get_yn() noexcept
 int main(int argc, char** argv)
 {
     std::vector<const char*> inputs;
-    const char* output = nullptr;
+    fs::path output;
     bool force_overwrite = false;
 
     {
@@ -33,7 +36,9 @@ int main(int argc, char** argv)
         bool bad_arg = false;
         for (int i = 1; i < argc && !bad_arg; ++i) {
             if (!std::strcmp(argv[i], "-o")) {
-                if (++i < argc) output = argv[i];
+                if (++i < argc) {
+                    output = argv[i];
+                }
                 else bad_arg = true;
             } else if (!std::strcmp(argv[i], "-V")) {
                 print_version = true;
@@ -52,22 +57,28 @@ int main(int argc, char** argv)
                 TARGET_OS, TARGET_ARCH, COMPILER_NAME, COMPILER_VERSION);
             return 0;
         }
-        if (bad_arg || !output || inputs.size() < 2) {
+        if (bad_arg || inputs.size() < 2) {
             std::fputs(
-                "Usage: mp4join <file_1> <file_2> [...] <-o output_file> [-V]\n"
+                "Usage: mp4join <file_1> <file_2> [...] [-o output_file]\n"
                 "\nmp4join: Utility for joining consecutive MP4 files.\n"
                 "\nOptions:\n"
                 " -o output   Specify output file.\n"
                 " -f          Always overwrite existing output file.\n"
-                " -V          Display version information.\n"
-                , stdout);
+                " -V          Display version information.\n",
+                stdout);
             return 1;
         }
     }
 
-    if (!force_overwrite && fs::is_regular_file(fs::path(output))) {
+    if (output.empty()) {
+        output = inputs[0];
+        output.replace_filename(output.stem().concat("_joined") += output.extension());
+    }
+    const auto output_str = output.string();
+
+    if (!force_overwrite && fs::is_regular_file(output)) {
         if (stdout_is_tty) {
-            std::printf("Output file %s already exists. Overwrite? [y/N] ", output);
+            std::printf("Output file %s already exists. Overwrite? [y/N] ", output_str.c_str());
             if (!get_yn()) {
                 std::fputs("Aborting.\n", stdout);
                 return 0;
@@ -89,7 +100,7 @@ int main(int argc, char** argv)
     };
     std::thread worker {
         [&] {
-            ret = mp4_join(static_cast<int>(inputs.size()), inputs.data(), output, prog_cb);
+            ret = mp4_join(static_cast<int>(inputs.size()), inputs.data(), output_str.c_str(), prog_cb);
             done.store(true, std::memory_order_release);
         }
     };
@@ -113,7 +124,7 @@ int main(int argc, char** argv)
 
     switch (ret) {
     case(JoinResult::Success):
-        std::printf("MP4 join done: %s\n", output);
+        std::printf("MP4 join done: %s\n", output_str.c_str());
         break;
     case(JoinResult::InvalidInput):
         std::puts("MP4 join error: Invalid input file.");
