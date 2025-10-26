@@ -1,10 +1,11 @@
-#include "mp4join/mp4join.hpp"
+#include "mp4join/mp4join.h"
 #include "mp4.hpp"
 #include "fourcc.hpp"
 #include <memory>
 #include <array>
 #include <vector>
 #include <optional>
+#include <cassert>
 
 using std::uint8_t, std::uint32_t, std::uint64_t, std::int64_t;
 
@@ -260,8 +261,11 @@ join_info(JoinInfo& info, Mp4Stream& file, std::size_t file_id, std::size_t curr
 }
 
 template<class D1, class D2>
-void copy_with_join_prog(WriteStreamBase<D1>& dst, ReadStreamBase<D2>& src, std::size_t n, std::size_t bufsize, const JoinProgCb& cb, int prog_start, int prog_end)
-{ // assumes cb is not empty
+void copy_with_join_prog(WriteStreamBase<D1>& dst, ReadStreamBase<D2>& src, std::size_t n, std::size_t bufsize, const Mp4Join_ProgCb& cb, int prog_start, int prog_end)
+{
+    // This function assumes cb is not empty
+    assert(cb.func != nullptr);
+
     #ifdef __cpp_lib_smart_ptr_for_overwrite
     const auto buf = std::make_unique_for_overwrite<unsigned char[]>(bufsize);
     #else
@@ -276,14 +280,16 @@ void copy_with_join_prog(WriteStreamBase<D1>& dst, ReadStreamBase<D2>& src, std:
         dst.write(buf.get(), sz);
         cnt += sz;
         const int prog_new = int(double(cnt) / n * (prog_end - prog_start)) + prog_start;
-        if (prog_new > prog) cb(prog_new);
+        if (prog_new > prog) {
+            cb.func(prog_new, cb.data);
+        }
         prog = prog_new;
     }
 }
 
 // Returns bytes written or error.
 std::optional<int64_t>
-write_joined(JoinInfo& info, std::vector<Mp4Stream>& files, BinaryFileStream& output, std::size_t track_id, int64_t max_read, const JoinProgCb& cb)
+write_joined(JoinInfo& info, std::vector<Mp4Stream>& files, BinaryFileStream& output, std::size_t track_id, int64_t max_read, const Mp4Join_ProgCb& cb)
 {
     // We don't do additional checking here...
     if (files.size() < 2) return {};
@@ -332,7 +338,7 @@ write_joined(JoinInfo& info, std::vector<Mp4Stream>& files, BinaryFileStream& ou
                 auto& f = files[file_id];
                 const auto& [data_offset, data_size] = info.mdat_position.at(file_id);
                 f.seek(data_offset);
-                if (cb) {
+                if (cb.func) {
                     const int prog_start = int(double(mdat_size_copied) / mdat_size_sum * 98) + 1;
                     const int prog_end = int(double(mdat_size_copied += data_size) / mdat_size_sum * 98) + 1;
                     copy_with_join_prog(output, f, data_size, 4*1024*1024, cb, prog_start, prog_end);
@@ -478,23 +484,25 @@ write_joined(JoinInfo& info, std::vector<Mp4Stream>& files, BinaryFileStream& ou
 
 } // unnamed ns
 
-JoinResult
-mp4join::mp4_join(int nb_input, const char* const* input_files, const char* output_file, const JoinProgCb& prog_cb) noexcept try
+Mp4Join_Result
+mp4_join(int nb_input, const char* const* input_files, const char* output_file, Mp4Join_ProgCb prog_cb) noexcept try
 {
-    if (nb_input < 2) return JoinResult::InvalidInput; // Require at-least 2 input files.
+    if (nb_input < 2) return Mp4Join_InvalidInput; // Require at-least 2 input files.
 
     // Open all input files for read.
     std::vector<Mp4Stream> input_streams(nb_input);
     for (auto i = 0; i < nb_input; ++i) {
-        if (!input_streams[i].open(input_files[i])) return JoinResult::IoError;
+        if (!input_streams[i].open(input_files[i])) return Mp4Join_IoError;
     }
     // Verify input files.
     for (auto& file : input_streams) {
-        if (!check_input(file)) return JoinResult::InvalidInput;
+        if (!check_input(file)) return Mp4Join_InvalidInput;
         file.seek(0);
     }
 
-    if (prog_cb) prog_cb(0);
+    if (prog_cb.func) {
+        prog_cb.func(0, prog_cb.data);
+    }
 
     const auto info = std::make_unique<JoinInfo>();
 
@@ -507,7 +515,7 @@ mp4join::mp4_join(int nb_input, const char* const* input_files, const char* outp
 
         // Update info list.
         file.seek(0);
-        if (!join_info(*info, file, i, 0, file.get_length())) return JoinResult::InternalError;
+        if (!join_info(*info, file, i, 0, file.get_length())) return Mp4Join_InternalError;
 
         // Update offsets for next file.
         info->mdat_offset += info->mdat_position.at(i)[1];
@@ -517,14 +525,16 @@ mp4join::mp4_join(int nb_input, const char* const* input_files, const char* outp
         }
     }
 
-    if (prog_cb) prog_cb(1);
+    if (prog_cb.func) {
+        prog_cb.func(1, prog_cb.data);
+    }
 
     // Open the output file.
     BinaryFileStream output_stream;
-    if (!output_stream.open(output_file, FileStreamMode::Write)) return JoinResult::IoError;
+    if (!output_stream.open(output_file, FileStreamMode::Write)) return Mp4Join_IoError;
     // Write to output file.
     input_streams.front().seek(0);
-    if (!write_joined(*info, input_streams, output_stream, 0, input_streams.front().get_length(), prog_cb)) return JoinResult::InternalError;
+    if (!write_joined(*info, input_streams, output_stream, 0, input_streams.front().get_length(), prog_cb)) return Mp4Join_InternalError;
 
     // Patch co64
     for (const auto &track : info->trak_infos) {
@@ -534,10 +544,12 @@ mp4join::mp4_join(int nb_input, const char* const* input_files, const char* outp
         }
     }
 
-    if (prog_cb) prog_cb(100);
+    if (prog_cb.func) {
+        prog_cb.func(100, prog_cb.data);
+    }
 
-    return JoinResult::Success;
+    return Mp4Join_Success;
 }
 catch (const StreamError&) {
-    return JoinResult::InternalError;
+    return Mp4Join_InternalError;
 }

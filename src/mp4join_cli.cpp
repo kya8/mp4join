@@ -1,4 +1,4 @@
-#include <mp4join/mp4join.hpp>
+#include <mp4join/mp4join.h>
 #include <mp4join/version.hpp>
 #include <cstdio>
 #include <cstring>
@@ -90,17 +90,20 @@ int main(int argc, char** argv)
     }
 
     using namespace mp4join;
-    JoinResult ret;
+    Mp4Join_Result ret;
     std::atomic<bool> done = false;
     std::atomic<int> prog = -1;
     int prog_prev = -1;
 
-    const auto prog_cb = [&] (int prog_) {
-        prog.store(prog_, std::memory_order_release);
-    };
     std::thread worker {
         [&] {
-            ret = mp4_join(static_cast<int>(inputs.size()), inputs.data(), output_str.c_str(), prog_cb);
+            ret = mp4_join(static_cast<int>(inputs.size()), inputs.data(), output_str.c_str(),
+            {
+                [](int prog_, void* data) {
+                    static_cast<decltype(&prog)>(data)->store(prog_, std::memory_order_release);
+                },
+                &prog
+            });
             done.store(true, std::memory_order_release);
         }
     };
@@ -123,16 +126,16 @@ int main(int argc, char** argv)
     worker.join();
 
     switch (ret) {
-    case(JoinResult::Success):
+    case(Mp4Join_Success):
         std::printf("MP4 join done: %s\n", output_str.c_str());
         break;
-    case(JoinResult::InvalidInput):
+    case(Mp4Join_InvalidInput):
         std::puts("MP4 join error: Invalid input file.");
         break;
-    case(JoinResult::IoError):
+    case(Mp4Join_IoError):
         std::puts("MP4 join error: Could not open file.");
         break;
-    case(JoinResult::InternalError):
+    case(Mp4Join_InternalError):
         std::puts("MP4 join error: Internal error.");
         break;
     }

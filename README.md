@@ -1,6 +1,6 @@
 # Introduction
 
-`mp4join` is a C++ library/utility for joining consecutive MP4/ISOBMFF files that are created with identical configurations. It's useful for merging chaptered video files produced by some cameras.
+`mp4join` is a C/C++ library/utility for joining consecutive MP4/ISOBMFF files that are created with identical configurations. It's useful for merging chaptered video files produced by some cameras.
 The operation is performed at the container level, passing through all data tracks losslessly.
 
 It's essentially a C++ port of the Rust library [mp4-merge](https://github.com/gyroflow/mp4-merge) from gyroflow, with no external dependencies.
@@ -38,7 +38,7 @@ $ cmake --build .
 Run `cpack` to create a zip archive containing the library, headers, and the command line utility.
 
 # Use as a library
-Refer to [mp4join.hpp](lib/mp4join/mp4join.hpp).
+This library offers a simple C-style interface. Refer to [mp4join.h](lib/mp4join/mp4join.h).
 
 # To-Do and missing features
 * Support generic input/output interfaces (e.g. `std::istream`).
