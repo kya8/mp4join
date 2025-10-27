@@ -4,7 +4,10 @@
 #include "api_export.h"
 
 #ifdef __cplusplus
+#define MP4JOIN_NOEXCEPT noexcept
 extern "C" {
+#else
+#define MP4JOIN_NOEXCEPT
 #endif
 
 typedef enum {
@@ -30,7 +33,7 @@ typedef struct {
  *
  * @note This function returns on completion or error.
  */
-MP4JOIN_API Mp4Join_Result mp4_join(int nb_input, const char* const* input_files, const char* output_file, Mp4Join_ProgCb prog_cb) noexcept;
+MP4JOIN_API Mp4Join_Result mp4_join(int nb_input, const char* const* input_files, const char* output_file, Mp4Join_ProgCb prog_cb) MP4JOIN_NOEXCEPT;
 
 #ifdef __cplusplus
 }
