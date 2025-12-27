@@ -66,7 +66,7 @@ int main(int argc, char** argv)
                 " -f          Always overwrite existing output file.\n"
                 " -V          Display version information.\n",
                 stdout);
-            return 1;
+            return 2;
         }
     }
 
@@ -140,5 +140,5 @@ int main(int argc, char** argv)
         break;
     }
 
-    return static_cast<int>(ret);
+    return ret == Mp4Join_Success ? 0 : 1;
 }
