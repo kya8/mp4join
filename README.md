@@ -19,6 +19,7 @@ On Windows, you can simply drag & drop input files onto the executable.
 ## Download
 Pre-compiled binaries are available at the [Release](https://github.com/kya8/mp4join/releases/latest) page.
 
+Or grab the latest binaries from GitHub actions: [![Cli build](https://github.com/kya8/mp4join/actions/workflows/build-cli-multi-os.yml/badge.svg?event=push)](https://github.com/kya8/mp4join/actions/workflows/build-cli-multi-os.yml)
 
 # Building
 
