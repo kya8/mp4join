@@ -40,7 +40,7 @@ jobs:
 
     - name: Set up MSVC environment on Windows
       # Required for CMake generators other than MSBuild
-      if: ${{ runner.os == 'Windows') }}
+      if: ${{ runner.os == 'Windows' }}
       uses: TheMrMilchmann/setup-msvc-dev@v4
       with:
           arch: x64
