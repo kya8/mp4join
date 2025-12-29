@@ -1,0 +1,57 @@
+name: Build Cli
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      # Set fail-fast to false to ensure that feedback is delivered for all matrix combinations. Consider changing this to true when your workflow is stable.
+      fail-fast: false
+
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        build_type: [Release]
+        include:
+          - os: macos-latest
+            cmake_extra_flags: "-D CMAKE_OSX_ARCHITECTURES=arm64;x86_64"
+          - os: windows-latest
+            exe_ext: ".exe"
+        #c_compiler: [gcc, clang, cl]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      # Turn repeated input strings (such as the build output directory) into step outputs. These step outputs can be used throughout the workflow file.
+      id: strings
+      shell: bash
+      run: |
+        echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -S ${{ github.workspace }} -G Ninja
+        -B ${{ steps.strings.outputs.build-output-dir }}
+        -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        ${{ matrix.cmake_extra_flags }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
+
+    - uses: actions/upload-artifact@v4
+      with:
+        name: mp4join-${{ github.sha }}-${{ matrix.os }}
+        path: |
+          ${{ steps.strings.outputs.build-output-dir }}/mp4join${{ matrix.exe_ext }}
+
+    # - name: Test
+    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
+    #   # Execute tests defined by the CMake configuration. Note that --build-config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
+    #   # See https://cmake.org/cmake/help/latest/manual/ctest.1.html for more detail
+    #   run: ctest --build-config ${{ matrix.build_type }}
