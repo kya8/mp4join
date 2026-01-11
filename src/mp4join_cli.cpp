@@ -52,7 +52,7 @@ int main(int argc, char** argv)
 
         if (print_version) {
             using namespace mp4join::version;
-            std::printf("Version %s, %s. Built type %s, %s %s, using %s %s\n",
+            std::printf("Version %s, %s. Build type %s, %s %s, using %s %s\n",
                 GIT_DESC, COMMIT_DATE, BUILD_TYPE,
                 TARGET_OS, TARGET_ARCH, COMPILER_NAME, COMPILER_VERSION);
             return 0;
