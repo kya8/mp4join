@@ -1,6 +1,4 @@
 #-------- Version & Build info
-# NOTE: version.cpp is only updated on CMake configure.
-# To update every time we build, use a custom target that runs the following as a .cmake script.
 
 set(GIT_DESC    Unknown)
 set(GIT_BRANCH  Unknown)

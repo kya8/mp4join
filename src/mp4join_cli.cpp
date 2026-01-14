@@ -1,5 +1,5 @@
 #include <mp4join/mp4join.h>
-#include <mp4join/version.hpp>
+#include <mp4join/version.h>
 #include <cstdio>
 #include <cstring>
 #include <vector>
@@ -51,10 +51,9 @@ int main(int argc, char** argv)
         }
 
         if (print_version) {
-            using namespace mp4join::version;
             std::printf("Version %s, %s. Build type %s, %s %s, using %s %s\n",
-                GIT_DESC, COMMIT_DATE, BUILD_TYPE,
-                TARGET_OS, TARGET_ARCH, COMPILER_NAME, COMPILER_VERSION);
+                MP4JOIN_GIT_DESC, MP4JOIN_COMMIT_DATE, MP4JOIN_BUILD_TYPE,
+                MP4JOIN_TARGET_OS, MP4JOIN_TARGET_ARCH, MP4JOIN_COMPILER_NAME, MP4JOIN_COMPILER_VERSION);
             return 0;
         }
         if (bad_arg || inputs.size() < 2) {
@@ -89,7 +88,6 @@ int main(int argc, char** argv)
         }
     }
 
-    using namespace mp4join;
     Mp4Join_Result ret;
     std::atomic<bool> done = false;
     std::atomic<int> prog = -1;

@@ -50,7 +50,7 @@ add_compile_options($<$<CXX_COMPILER_ID:MSVC>:/Zc:__cplusplus>)
 set(MP4JOIN_SOURCE_FILES
 bstream/endian.h bstream/lfs.hpp bstream/binary_stream.hpp bstream/binary_file_stream.hpp bstream/binary_file_stream.cpp
 mp4.hpp mp4.cpp mp4join.cpp fourcc.hpp
-mp4join/api_export.h mp4join/mp4join.h mp4join/version.hpp
+mp4join/api_export.h mp4join/mp4join.h mp4join/version.h
 )
 list(TRANSFORM MP4JOIN_SOURCE_FILES PREPEND lib/)
 
@@ -59,7 +59,7 @@ ${MP4JOIN_SOURCE_FILES}
 ${GENERATED_SOURCE_DIR}/version.cpp
 )
 target_include_directories(mp4join PUBLIC lib)
-target_compile_definitions(mp4join PRIVATE MP4JOIN_BUILD_TYPE=\"$<CONFIG>\")
+target_compile_definitions(mp4join PRIVATE CMAKE_MP4JOIN_BUILD_TYPE=\"$<CONFIG>\")
 target_compile_definitions(mp4join PRIVATE MP4JOIN_SOURCE)
 if(BUILD_SHARED_LIBS)
 target_compile_definitions(mp4join PUBLIC MP4JOIN_SHARED_LIB)
