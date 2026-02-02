@@ -22,8 +22,14 @@ jobs:
             cmake_extra_flags: "-D CMAKE_OSX_ARCHITECTURES='arm64;x86_64'"
           - os: windows-latest
             exe_ext: ".exe"
-            cmake_extra_flags: "-D CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>"
+            cmake_extra_flags: "-D 'CMAKE_MSVC_RUNTIME_LIBRARY=MultiThreaded$<$<CONFIG:Debug>:Debug>'"
+          - os: ubuntu-latest
+            cmake_extra_flags: "-D CMAKE_EXE_LINKER_FLAGS=-static"
         #c_compiler: [gcc, clang, cl]
+
+    defaults:
+      run:
+        shell: ${{ matrix.os == 'ubuntu-latest' && 'alpine.sh {0}' || 'bash' }}
 
     steps:
     - uses: actions/checkout@v4
@@ -46,19 +52,30 @@ jobs:
       with:
           arch: x64
 
+    - name: Set up alpine chroot on Ubuntu runner
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      uses: jirutka/setup-alpine@v1
+      with:
+        packages: >
+          build-base
+          cmake
+          ninja
+          git
+        # git is for generating version info
+
     - name: Configure CMake
       run: >
-        cmake -S ${{ github.workspace }} -G Ninja
-        -B ${{ steps.strings.outputs.build-output-dir }}
+        cmake -S '${{ github.workspace }}' -G Ninja
+        -B '${{ steps.strings.outputs.build-output-dir }}'
         -D CMAKE_BUILD_TYPE=${{ matrix.build_type }}
         ${{ matrix.cmake_extra_flags }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }}
+      run: cmake --build '${{ steps.strings.outputs.build-output-dir }}'
 
     - uses: actions/upload-artifact@v4
       with:
-        name: mp4join-${{ github.sha }}-${{ matrix.os }}
+        name: mp4join-${{ github.sha }}-${{ runner.os }}-${{ runner.arch }}
         path: |
           ${{ steps.strings.outputs.build-output-dir }}/mp4join${{ matrix.exe_ext }}
 
