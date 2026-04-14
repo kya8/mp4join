@@ -1,3 +1,7 @@
+## Merged into [slate](https://github.com/kya8/slate)
+
+---
+
 # Introduction
 
 `mp4join` is a C/C++ library/utility for joining consecutive MP4/ISOBMFF files that are created with identical configurations. It's useful for merging chaptered video files produced by some cameras.
